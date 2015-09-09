@@ -9,9 +9,8 @@ var Service = function () {
 	this.mutedTabs = [];
 
 	this.storage = chrome.storage.sync;
-	this.storageKeys = ["global", "blockedHosts", "blockedPages"];
+	this.storageKeys = ["blockedHosts", "blockedPages"];
 
-	this.global = false;
 	this.blockedHosts = [];
 	this.blockedPages = [];
 
