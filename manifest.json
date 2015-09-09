@@ -3,7 +3,7 @@
 	"minimum_chrome_version": "45",
 	"name": "ShutUp!Tab",
 	"description": "Mute tabs",
-	"version": "2.2",
+	"version": "2.3",
 	"author": "Gallyamov Ramil",
 	"permissions": [
 		"tabs",
