@@ -62,8 +62,8 @@ Service.prototype.refreshIcon = function (tab) {
 
 Service.prototype.refreshContextMenu = function (tab) {
 	// todo: i18n
-	var blockHost = this.isHostBlocked(tab.url) ? "Remove domain from black list" : "Add domain to black list";
-	var blockPage = this.isPageBlocked(tab.url) ? "Remove page from black list" : "Add page to black list";
+	var blockHost = this.isHostBlocked(tab.url) ? "Remove domain from blacklist" : "Add domain to blacklist";
+	var blockPage = this.isPageBlocked(tab.url) ? "Remove page from blacklist" : "Add page to blacklist";
 
 	chrome.contextMenus.update("block-host", { title: blockHost });
 	chrome.contextMenus.update("block-page", { title: blockPage });
