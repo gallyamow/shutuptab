@@ -9,11 +9,11 @@ var Service = function () {
 	this.mutedTabs = [];
 
 	this.storage = chrome.storage.sync;
-	this.storageKeys = ["global", "hosts", "pages"];
+	this.storageKeys = ["global", "blockedHosts", "blockedPages"];
 
 	this.global = false;
-	this.hosts = [];
-	this.pages = [];
+	this.blockedHosts = [];
+	this.blockedPages = [];
 
 	this.init();
 };
@@ -42,9 +42,6 @@ Service.prototype.mute = function (tab, mute) {
 	}
 
 	chrome.tabs.update(tab.id, { muted: mute });
-
-	this.refreshIcon(tab);
-	this.refreshContextMenu(tab);
 };
 
 Service.prototype.isMuted = function (tab) {
@@ -83,7 +80,7 @@ Service.prototype.refreshContextMenu = function (tab) {
  */
 Service.prototype.block = function (tab, what, action) {
 	var url = tab.url,
-		field = this[what === "host" ? "hosts" : "pages"],
+		field = this[what === "host" ? "blockedHosts" : "blockedPages"],
 		identifier = what === "host" ? this.getHost(url) : this.getPage(url),
 		index;
 
@@ -102,17 +99,14 @@ Service.prototype.block = function (tab, what, action) {
 	}
 
 	this.saveStorage();
-
-	this.refreshIcon(tab);
-	this.refreshContextMenu(tab);
 };
 
 Service.prototype.isHostBlocked = function (url) {
-	return this.hosts.indexOf(this.getHost(url)) !== -1;
+	return this.blockedHosts.indexOf(this.getHost(url)) !== -1;
 };
 
 Service.prototype.isPageBlocked = function (url) {
-	return this.pages.indexOf(this.getPage(url)) !== -1;
+	return this.blockedPages.indexOf(this.getPage(url)) !== -1;
 };
 
 Service.prototype.isBlocked = function (url) {
@@ -143,9 +137,7 @@ Service.prototype.saveStorage = function () {
 		}
 	});
 
-	this.storage.set(data, function () {
-		//self.message("Success", "Saved");
-	});
+	this.storage.set(data);
 };
 
 Service.prototype.getHost = function (url) {
@@ -158,15 +150,6 @@ Service.prototype.getPage = function (url) {
 	return match && match[2];
 };
 
-Service.prototype.message = function (title, message) {
-	chrome.notifications.create(null, {
-		type: "basic",
-		iconUrl: "images/icon-normal.png",
-		title: title,
-		message: message
-	});
-};
-
 Service.prototype.onBrowserActionClick = function (tab) {
 	// для заблокированных отключено переключение без удаления из черного списка
 	if (this.isBlocked(tab.url)) {
@@ -174,6 +157,9 @@ Service.prototype.onBrowserActionClick = function (tab) {
 	}
 
 	this.mute(tab, !this.isMuted(tab));
+
+	this.refreshIcon(tab)
+	this.refreshContextMenu(tab)
 };
 
 Service.prototype.onTabChange = function (tab) {
@@ -194,7 +180,7 @@ Service.prototype.onContextMenuClick = function (info) {
 	var self = this,
 		tabId = info.menuItemId;
 
-	chrome.tabs.query({ active: true }, function (tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		if (!tabs.length) {
 			return;
 		}
@@ -218,6 +204,9 @@ Service.prototype.onContextMenuClick = function (info) {
 				self.block(tab, "page", action);
 				break;
 		}
+
+		self.refreshIcon(tab)
+		self.refreshContextMenu(tab)
 	});
 };
 
@@ -225,14 +214,6 @@ var service = new Service();
 
 chrome.browserAction.onClicked.addListener(function (tab) {
 	service.onBrowserActionClick(tab);
-});
-
-chrome.tabs.onCreated.addListener(function (tab) {
-	service.onTabChange(tab);
-});
-
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-	service.onTabChange(tab);
 });
 
 chrome.tabs.onActivated.addListener(function (info) {
