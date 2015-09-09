@@ -235,11 +235,11 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 	service.onTabChange(tab);
 });
 
-//chrome.tabs.onActivated.addListener(function (info) {
-//	chrome.tabs.get(info.tabId, function (tab) {
-//		service.onTabChange(tab);
-//	});
-//});
+chrome.tabs.onActivated.addListener(function (info) {
+	chrome.tabs.get(info.tabId, function (tab) {
+		service.onTabChange(tab);
+	});
+});
 
 chrome.contextMenus.create({
 	id: "block-page",
