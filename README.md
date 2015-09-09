@@ -1,10 +1,8 @@
 Chrome extension for mute tabs.
 
-Features:
-=============
-Black list
-Used "muted" option of chrome.tabs.update
+##Features:
+1. Black list
+2. Mute all tabs (soon)
 
-Requirements:
-=============
+##Requirements:
 Google Chrome version 45 or above

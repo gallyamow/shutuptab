@@ -71,23 +71,28 @@ Service.prototype.refreshContextMenu = function (tab) {
 
 /**
  * Add or remove url from block list
- * @param {string} url
- * @param {string} where
+ * @param {Object} tab
+ * @param {string} what
  * @param {string} action
  */
-Service.prototype.block = function (url, where, action) {
-	var field = this[where === "host" ? "hosts" : "pages"],
-		identifier = where === "host" ? this.getHost(url) : this.getPage(url),
+Service.prototype.block = function (tab, what, action) {
+	var url = tab.url,
+		field = this[what === "host" ? "hosts" : "pages"],
+		identifier = what === "host" ? this.getHost(url) : this.getPage(url),
 		index;
 
 	if (action === "add") {
 		field.push(identifier);
+
+		this.mute(tab, true);
 	} else {
 		index = field.indexOf(identifier);
 
 		if (index !== -1) {
 			field.splice(index, 1);
 		}
+
+		this.mute(tab, false);
 	}
 
 	this.saveStorage();
@@ -119,7 +124,7 @@ Service.prototype.saveStorage = function () {
 	var data = {};
 
 	this.storageKeys.forEach(function (key) {
-		if (data[key]) {
+		if (self[key]) {
 			data[key] = self[key];
 		}
 	});
@@ -163,7 +168,8 @@ Service.prototype.onTabChange = function (tab) {
 };
 
 Service.prototype.onContextMenuClick = function (info) {
-	var self = this;
+	var self = this,
+		tabId = info.menuItemId;
 
 	chrome.tabs.query({ active: true }, function (tabs) {
 		if (!tabs.length) {
@@ -176,17 +182,19 @@ Service.prototype.onContextMenuClick = function (info) {
 			return;
 		}
 
-		var url = tab.url;
+		var url = tab.url,
+			action;
 
-		if (info.menuItemId === "block-host") {
-			service.block(url, "host", self.isHostBlocked(url) ? "remove" : "add");
+		switch (tabId) {
+			case "block-host":
+				action = self.isHostBlocked(url) ? "remove" : "add";
+				service.block(tab, "host", action);
+				break;
+			case "block-page":
+				action = self.isPageBlocked(url) ? "remove" : "add";
+				service.block(tab, "page", action);
+				break;
 		}
-
-		if (info.menuItemId === "block-page") {
-			service.block(url, "page", self.isPageBlocked(url) ? "remove" : "add");
-		}
-
-		self.refreshContextMenu(tab);
 	});
 };
 
