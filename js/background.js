@@ -52,7 +52,13 @@ Service.prototype.isMuted = function (tab) {
 };
 
 Service.prototype.refreshIcon = function (tab) {
-	var icon = this.isMuted(tab) ? "images/icon-muted.png" : "images/icon-normal.png";
+	var icon = "images/icon-normal.png";
+
+	if (this.isBlocked(tab.url)) {
+		icon = "images/icon-blocked.png";
+	} else if (this.isMuted(tab)) {
+		icon = "images/icon-muted.png";
+	}
 
 	chrome.browserAction.setIcon({
 		path: icon,
@@ -96,6 +102,9 @@ Service.prototype.block = function (tab, what, action) {
 	}
 
 	this.saveStorage();
+
+	this.refreshIcon(tab);
+	this.refreshContextMenu(tab);
 };
 
 Service.prototype.isHostBlocked = function (url) {
@@ -105,6 +114,11 @@ Service.prototype.isHostBlocked = function (url) {
 Service.prototype.isPageBlocked = function (url) {
 	return this.pages.indexOf(this.getPage(url)) !== -1;
 };
+
+Service.prototype.isBlocked = function (url) {
+	return this.isHostBlocked(url) || this.isPageBlocked(url);
+};
+
 
 Service.prototype.loadStorage = function () {
 	var self = this;
@@ -153,13 +167,22 @@ Service.prototype.message = function (title, message) {
 	});
 };
 
+Service.prototype.onBrowserActionClick = function (tab) {
+	// для заблокированных отключено переключение без удаления из черного списка
+	if (this.isBlocked(tab.url)) {
+		return;
+	}
+
+	this.mute(tab, !this.isMuted(tab));
+};
+
 Service.prototype.onTabChange = function (tab) {
 	if (!tab || !tab.url) {
 		return;
 	}
 
 	// выключаем заблокированные
-	if ((this.isHostBlocked(tab.url) || this.isPageBlocked(tab.url)) && !this.isMuted(tab)) {
+	if (this.isBlocked(tab.url) && !this.isMuted(tab)) {
 		this.mute(tab, true);
 	}
 
@@ -188,11 +211,11 @@ Service.prototype.onContextMenuClick = function (info) {
 		switch (tabId) {
 			case "block-host":
 				action = self.isHostBlocked(url) ? "remove" : "add";
-				service.block(tab, "host", action);
+				self.block(tab, "host", action);
 				break;
 			case "block-page":
 				action = self.isPageBlocked(url) ? "remove" : "add";
-				service.block(tab, "page", action);
+				self.block(tab, "page", action);
 				break;
 		}
 	});
@@ -201,7 +224,7 @@ Service.prototype.onContextMenuClick = function (info) {
 var service = new Service();
 
 chrome.browserAction.onClicked.addListener(function (tab) {
-	service.mute(tab, !service.isMuted(tab));
+	service.onBrowserActionClick(tab);
 });
 
 chrome.tabs.onCreated.addListener(function (tab) {
@@ -211,6 +234,12 @@ chrome.tabs.onCreated.addListener(function (tab) {
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 	service.onTabChange(tab);
 });
+
+//chrome.tabs.onActivated.addListener(function (info) {
+//	chrome.tabs.get(info.tabId, function (tab) {
+//		service.onTabChange(tab);
+//	});
+//});
 
 chrome.contextMenus.create({
 	id: "block-page",

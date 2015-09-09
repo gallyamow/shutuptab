@@ -11,6 +11,9 @@
 		"notifications",
 		"contextMenus"
 	],
+    "icons": {
+      "128": "images/icon-app.png"
+    },
 	"browser_action": {
 		"name": "ShutUp!Tab",
 		"default_icon": "images/icon-normal.png"
