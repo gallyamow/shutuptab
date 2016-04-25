@@ -12,3 +12,6 @@ Chrome extension for mute tabs.
 1. Type пше  into Chrome's address bar and press Enter.
 2. Chrome should automatically scroll down to the "Enable Tab Audio Muting UI" flag. Click the enable link below it.
 3. Restart Chrome.
+
+
+https://chrome.google.com/webstore/detail/shutuptab/ohadipdcpdgpkmkjmebbbicpjljopcaj
