@@ -1,20 +1,7 @@
 shutuptab
 =========
 
-Расширение к браузеру Chrome для приглушения звука на вкладках
-## Возможности
-1. Черный список доменов и страниц
-2. Приглушение звука на всех страницах (скоро)
-
-## Требования
-1. Chrome версии 45 или выше
-2. Включенная настройка "enable-tab-audio-muting" (для версии 45)
-
-## Как включить настройку "enable-tab-audio-muting"
-1. Ввести в адресной строке браузера "chrome://flags/#enable-tab-audio-muting" и нажать Enter
-2. Включить "Функция отключения звука на вкладке"
-
-Chrome extension for mute tabs.
+Chrome extension for muting tabs.
 
 ## Features:
 1. Black list
@@ -29,5 +16,18 @@ Chrome extension for mute tabs.
 2. Chrome should automatically scroll down to the "Enable Tab Audio Muting UI" flag. Click the enable link below it.
 3. Restart Chrome.
 
-
 https://chrome.google.com/webstore/detail/shutuptab/ohadipdcpdgpkmkjmebbbicpjljopcaj
+
+Расширение к браузеру Chrome для приглушения звука на вкладках
+## Возможности
+1. Черный список доменов и страниц
+2. Приглушение звука на всех страницах (скоро)
+
+## Требования
+1. Chrome версии 45 или выше
+2. Включенная настройка "enable-tab-audio-muting" (для версии 45)
+
+## Как включить настройку "enable-tab-audio-muting"
+1. Ввести в адресной строке браузера "chrome://flags/#enable-tab-audio-muting" и нажать Enter
+2. Включить "Функция отключения звука на вкладке"
+
