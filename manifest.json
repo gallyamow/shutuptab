@@ -1,26 +1,25 @@
 {
-	"manifest_version": 2,
-	"minimum_chrome_version": "45",
-	"name": "ShutUp!Tab",
-	"description": "Mute tabs",
-	"version": "2.3",
-	"author": "Gallyamov Ramil",
-	"permissions": [
-		"tabs",
-		"storage",
-		"notifications",
-		"contextMenus"
-	],
-    "icons": {
-      "128": "images/icon-app.png"
-    },
-	"browser_action": {
-		"name": "ShutUp!Tab",
-		"default_icon": "images/icon-normal.png"
-	},
-	"background": {
-		"scripts": [
-			"js/background.js"
-		]
-	}
+  "manifest_version": 2,
+  "minimum_chrome_version": "45",
+  "name": "ShutUp!Tab",
+  "description": "Mute the active tab or automatically mute the tabs opened by the URL from the blacklist.",
+  "version": "2.3",
+  "author": "Gallyamov Ramil",
+  "permissions": [
+    "tabs",
+    "storage",
+    "contextMenus"
+  ],
+  "icons": {
+    "128": "images/icon-app.png"
+  },
+  "browser_action": {
+    "name": "ShutUp!Tab",
+    "default_icon": "images/icon-normal.png"
+  },
+  "background": {
+    "scripts": [
+      "js/background.js"
+    ]
+  }
 }
