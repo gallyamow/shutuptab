@@ -1,6 +1,13 @@
 'use strict'
 
-var Service = function () {
+/**
+ * @typedef {Object} chrome
+ * @property {*} tabs
+ * @property {*} browserAction
+ * @property {*} contextMenus
+ */
+
+const Service = function () {
   /**
    * Состояние вкладок.
    * Вынужден хранить tab.mutedInfo появится (c chrome 46)
@@ -27,8 +34,8 @@ Service.prototype.init = function () {
  * @param {boolean} mute
  */
 Service.prototype.mute = function (tab, mute) {
-  var id = tab.id,
-    index
+  const id = tab.id
+  let index
 
   if (mute) {
     this.mutedTabs.push(id)
@@ -48,7 +55,7 @@ Service.prototype.isMuted = function (tab) {
 }
 
 Service.prototype.refreshIcon = function (tab) {
-  var icon = 'images/icon-normal.png'
+  let icon = 'images/icon-normal.png'
 
   if (this.isBlocked(tab.url)) {
     icon = 'images/icon-blocked.png'
@@ -64,8 +71,8 @@ Service.prototype.refreshIcon = function (tab) {
 
 Service.prototype.refreshContextMenu = function (tab) {
   // todo: i18n
-  var blockHost = this.isHostBlocked(tab.url) ? 'Remove domain from blacklist' : 'Add domain to blacklist'
-  var blockPage = this.isPageBlocked(tab.url) ? 'Remove page from blacklist' : 'Add page to blacklist'
+  const blockHost = this.isHostBlocked(tab.url) ? 'Remove domain from blacklist' : 'Add domain to blacklist'
+  const blockPage = this.isPageBlocked(tab.url) ? 'Remove page from blacklist' : 'Add page to blacklist'
 
   chrome.contextMenus.update('block-host', {title: blockHost})
   chrome.contextMenus.update('block-page', {title: blockPage})
@@ -78,10 +85,10 @@ Service.prototype.refreshContextMenu = function (tab) {
  * @param {string} action
  */
 Service.prototype.block = function (tab, what, action) {
-  var url = tab.url,
-    field = this[what === 'host' ? 'blockedHosts' : 'blockedPages'],
-    identifier = what === 'host' ? this.getHost(url) : this.getPage(url),
-    index
+  const url = tab.url
+  const field = this[what === 'host' ? 'blockedHosts' : 'blockedPages']
+  const identifier = what === 'host' ? this.getHost(url) : this.getPage(url)
+  let index
 
   if (action === 'add') {
     field.push(identifier)
@@ -113,25 +120,21 @@ Service.prototype.isBlocked = function (url) {
 }
 
 Service.prototype.loadStorage = function () {
-  var self = this
-
-  this.storage.get(this.storageKeys, function (items) {
-    self.storageKeys.forEach(function (key) {
+  this.storage.get(this.storageKeys, (items) => {
+    this.storageKeys.forEach((key) => {
       if (items[key]) {
-        self[key] = items[key]
+        this[key] = items[key]
       }
     })
   })
 }
 
 Service.prototype.saveStorage = function () {
-  var self = this
+  const data = {}
 
-  var data = {}
-
-  this.storageKeys.forEach(function (key) {
-    if (self[key]) {
-      data[key] = self[key]
+  this.storageKeys.forEach((key) => {
+    if (this[key]) {
+      data[key] = this[key]
     }
   })
 
@@ -139,12 +142,12 @@ Service.prototype.saveStorage = function () {
 }
 
 Service.prototype.getHost = function (url) {
-  var match = url.match(/^https?\:\/\/(www\.)?([^\/:?#]+)(?:[\/:?#]|$)/i)
+  const match = url.match(/^https?:\/\/(www\.)?([^\/:?#]+)(?:[\/:?#]|$)/i)
   return match && match[2]
 }
 
 Service.prototype.getPage = function (url) {
-  var match = url.match(/^https?\:\/\/(www\.)?([^#]+)(?:[\/:?#]|$)/i)
+  const match = url.match(/^https?:\/\/(www\.)?([^#]+)(?:[\/:?#]|$)/i)
   return match && match[2]
 }
 
@@ -175,47 +178,45 @@ Service.prototype.onTabChange = function (tab) {
 }
 
 Service.prototype.onContextMenuClick = function (info) {
-  var self = this,
-    tabId = info.menuItemId
+  const tabId = info.menuItemId
 
-  chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
     if (!tabs.length) {
       return
     }
 
-    var tab = tabs[0]
-
+    const tab = tabs[0]
     if (!tab || !tab.url) {
       return
     }
 
-    var url = tab.url,
-      action
+    const url = tab.url
 
+    let action
     switch (tabId) {
       case 'block-host':
-        action = self.isHostBlocked(url) ? 'remove' : 'add'
-        self.block(tab, 'host', action)
+        action = this.isHostBlocked(url) ? 'remove' : 'add'
+        this.block(tab, 'host', action)
         break
       case 'block-page':
-        action = self.isPageBlocked(url) ? 'remove' : 'add'
-        self.block(tab, 'page', action)
+        action = this.isPageBlocked(url) ? 'remove' : 'add'
+        this.block(tab, 'page', action)
         break
     }
 
-    self.refreshIcon(tab)
-    self.refreshContextMenu(tab)
+    this.refreshIcon(tab)
+    this.refreshContextMenu(tab)
   })
 }
 
-var service = new Service()
+const service = new Service()
 
-chrome.browserAction.onClicked.addListener(function (tab) {
+chrome.browserAction.onClicked.addListener((tab) => {
   service.onBrowserActionClick(tab)
 })
 
-chrome.tabs.onActivated.addListener(function (info) {
-  chrome.tabs.get(info.tabId, function (tab) {
+chrome.tabs.onUpdated.addListener((tabId) => {
+  chrome.tabs.get(tabId, (tab) => {
     service.onTabChange(tab)
   })
 })
@@ -224,7 +225,7 @@ chrome.contextMenus.create({
   id: 'block-page',
   title: 'Add page to black list',
   contexts: ['browser_action'],
-  onclick: function (info) {
+  onclick: (info) => {
     service.onContextMenuClick(info)
   }
 })
@@ -233,7 +234,7 @@ chrome.contextMenus.create({
   id: 'block-host',
   title: 'Add domain to black list',
   contexts: ['browser_action'],
-  onclick: function (info) {
+  onclick: (info) => {
     service.onContextMenuClick(info)
   }
 })
