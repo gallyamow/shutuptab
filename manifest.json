@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "minimum_chrome_version": "45",
   "name": "ShutUp!Tab",
-  "description": "Mute the active tab or automatically mute the tabs opened by the URL from the blacklist.",
-  "version": "2.4.2",
+  "description": "Mute the active tab permanently via black list of domains.",
+  "version": "2.4.3",
   "author": "Gallyamov Ramil",
   "permissions": [
     "tabs",
