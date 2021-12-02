@@ -3,7 +3,7 @@
 /**
  * @typedef {Object} chrome
  * @property {*} tabs
- * @property {*} browserAction
+ * @property {*} action
  * @property {*} contextMenus
  */
 
@@ -63,7 +63,7 @@ Service.prototype.refreshIcon = function (tab) {
     icon = 'images/icon-muted.png'
   }
 
-  chrome.browserAction.setIcon({
+  chrome.action.setIcon({
     path: icon,
     tabId: tab.id
   })
@@ -151,7 +151,7 @@ Service.prototype.getPage = function (url) {
   return match && match[2]
 }
 
-Service.prototype.onBrowserActionClick = function (tab) {
+Service.prototype.onActionClick = function (tab) {
   // для заблокированных отключено переключение без удаления из черного списка
   if (this.isBlocked(tab.url)) {
     return
@@ -211,8 +211,8 @@ Service.prototype.onContextMenuClick = function (info) {
 
 const service = new Service()
 
-chrome.browserAction.onClicked.addListener((tab) => {
-  service.onBrowserActionClick(tab)
+chrome.action.onClicked.addListener((tab) => {
+  service.onActionClick(tab)
 })
 
 chrome.tabs.onUpdated.addListener((tabId) => {
@@ -224,7 +224,7 @@ chrome.tabs.onUpdated.addListener((tabId) => {
 chrome.contextMenus.create({
   id: 'block-page',
   title: 'Add page to black list',
-  contexts: ['browser_action'],
+  contexts: ['action'],
   onclick: (info) => {
     service.onContextMenuClick(info)
   }
@@ -233,7 +233,7 @@ chrome.contextMenus.create({
 chrome.contextMenus.create({
   id: 'block-host',
   title: 'Add domain to black list',
-  contexts: ['browser_action'],
+  contexts: ['action'],
   onclick: (info) => {
     service.onContextMenuClick(info)
   }
