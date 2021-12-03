@@ -3,7 +3,7 @@
   "minimum_chrome_version": "45",
   "name": "ShutUp!Tab",
   "description": "Mute the active tab permanently via black list of domains.",
-  "version": "2.4.3",
+  "version": "3.0.0",
   "author": "Gallyamov Ramil",
   "permissions": [
     "tabs",
@@ -18,8 +18,6 @@
     "default_icon": "images/icon-normal.png"
   },
   "background": {
-    "service_worker": [
-      "js/background.js"
-    ]
+    "service_worker": "js/background.js"
   }
 }

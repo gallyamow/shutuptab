@@ -1,17 +1,19 @@
-shutuptab
-=========
+# ShutupTab - Chrome extension
 
-Chrome extension for muting tabs.
+Mute the active tab or automatically mute the tabs opened by the URL from the blacklist.
+Позволяет отключать звук на определенных вкладках либо добавить домен или url в черный список для постоянного отключения звука на них.
 
 ## Features:
+
 1. Black list
-2. Mute all tabs (soon)
 
 ## Requirements:
+
 1. Google Chrome version 45 or above
 2. "enable-tab-audio-muting" setting is enabled
 
 ## Enable Chrome's setting "enable-tab-audio-muting 
+
 1. Type "chrome://flags/#enable-tab-audio-muting" into Chrome's address bar and press Enter.
 2. Chrome should automatically scroll down to the "Enable Tab Audio Muting UI" flag. Click the enable link below it.
 3. Restart Chrome.
@@ -19,6 +21,7 @@ Chrome extension for muting tabs.
 https://chrome.google.com/webstore/detail/shutuptab/ohadipdcpdgpkmkjmebbbicpjljopcaj
 
 Расширение к браузеру Chrome для приглушения звука на вкладках
+
 ## Возможности
 1. Черный список доменов и страниц
 2. Приглушение звука на всех страницах (скоро)
