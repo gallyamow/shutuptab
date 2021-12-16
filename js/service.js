@@ -36,6 +36,12 @@ class Service {
       this.onActionClick(tab)
     })
 
+    chrome.tabs.onActivated.addListener(activeInfo => {
+      chrome.tabs.get(activeInfo.tabId, async (tab) => {
+        this.onTabChanged(tab)
+      })
+    })
+
     chrome.tabs.onUpdated.addListener(tabId => {
       chrome.tabs.get(tabId, async (tab) => {
         this.onTabChanged(tab)
