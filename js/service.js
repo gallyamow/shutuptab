@@ -15,13 +15,6 @@ const ACTION_UNBLOCK = 'unblock'
 
 class Service {
   constructor () {
-    /**
-     * Состояние вкладок.
-     * Вынужден хранить tab.mutedInfo появится (c chrome 46)
-     * @type {Array}
-     */
-    this.mutedTabs = []
-
     this.blockedHosts = []
     this.blockedPages = []
 
@@ -44,7 +37,7 @@ class Service {
     })
 
     chrome.tabs.onUpdated.addListener(tabId => {
-      chrome.tabs.get(tabId, (tab) => {
+      chrome.tabs.get(tabId, async (tab) => {
         this.onTabChanged(tab)
       })
     })
@@ -54,29 +47,29 @@ class Service {
     })
   }
 
-  onTabChanged (tab) {
+  async onTabChanged (tab) {
     if (!tab || !tab.url) {
       return
     }
 
-    if (this.isBlocked(tab.url) && !this.isMuted(tab)) {
-      this.mute(tab, true)
+    if (this.isBlocked(tab.url)) {
+      await this.mute(tab, true)
     }
 
     this.refreshIcon(tab)
     this.refreshContextMenu(tab)
   }
 
-  onActionClick (tab) {
+  async onActionClick (tab) {
     // для заблокированных отключено переключение без удаления из черного списка
     if (this.isBlocked(tab.url)) {
       return
     }
 
-    if (this.isMuted(tab)) {
-      this.unmute(tab.id)
+    if (this.isTabMuted(tab)) {
+      await this.unmute(tab)
     } else {
-      this.mute(tab.id)
+      await this.mute(tab)
     }
 
     this.refreshIcon(tab)
@@ -84,9 +77,9 @@ class Service {
   }
 
   onContextMenuClick (info) {
-    const tabId = info.menuItemId
+    const menuId = info.menuItemId
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       if (!tabs.length) {
         return
       }
@@ -99,14 +92,14 @@ class Service {
       const url = tab.url
       let action
 
-      switch (tabId) {
+      switch (menuId) {
         case MENU_BLOCKED_HOSTS:
           action = this.isHostBlocked(url) ? ACTION_UNBLOCK : ACTION_BLOCK
-          this.block(tab, 'host', action)
+          await this.block(tab, 'host', action)
           break
         case MENU_BLOCKED_PAGES:
           action = this.isPageBlocked(url) ? ACTION_UNBLOCK : ACTION_BLOCK
-          this.block(tab, 'page', action)
+          await this.block(tab, 'page', action)
           break
       }
 
@@ -115,25 +108,25 @@ class Service {
     })
   }
 
-  mute (tabId) {
-    if (this.mutedTabs.includes(tabId)) {
+  async mute (tab) {
+    if (this.isTabMuted(tab)) {
       return
     }
 
-    this.mutedTabs.push(tabId)
-    chrome.tabs.update(tabId, { muted: true })
+    const tabId = tab.id
+    await chrome.tabs.update(tabId, { muted: true })
   }
 
-  unmute (tabId) {
-    if (!this.mutedTabs.includes(tabId)) {
+  async unmute (tab) {
+    if (!this.isTabMuted(tab)) {
       return
     }
 
-    this.mutedTabs = this.mutedTabs.filter(v => v !== tabId)
-    chrome.tabs.update(tab.id, { muted: false })
+    const tabId = tab.id
+    await chrome.tabs.update(tabId, { muted: false })
   }
 
-  block (tab, what, action) {
+  async block (tab, what, action) {
     const url = tab.url
 
     let uid, field
@@ -152,12 +145,14 @@ class Service {
 
     switch (action) {
       case ACTION_BLOCK:
-        this[field].push(uid)
-        this.mute(tab.id)
+        if (!this[field].includes(uid)) {
+          this[field].push(uid)
+        }
+        await this.mute(tab)
         break
       case ACTION_UNBLOCK:
         this[field] = this[field].filter(v => v !== uid)
-        this.unmute(tab.id)
+        await this.unmute(tab)
         break
     }
 
@@ -194,13 +189,13 @@ class Service {
 
   refreshIcon (tab) {
     chrome.action.setIcon({
-      path: this.resolveTabIcon(tab.url, tab.id),
+      path: this.resolveTabIcon(tab),
       tabId: tab.id
     })
   }
 
-  isMuted (tabId) {
-    return this.mutedTabs.includes(tabId)
+  isTabMuted (tab) {
+    return tab.mutedInfo.muted
   }
 
   isHostBlocked (url) {
@@ -215,14 +210,14 @@ class Service {
     return this.isHostBlocked(url) || this.isPageBlocked(url)
   }
 
-  resolveTabIcon (tabUrl, tabId) {
+  resolveTabIcon (tab) {
     switch (true) {
-      case this.isBlocked(tabUrl):
-        return 'images/icon-blocked.png'
-      case this.isMuted(tabId):
-        return 'images/icon-muted.png'
+      case this.isBlocked(tab.url):
+        return '../images/icon-blocked.png'
+      case this.isTabMuted(tab):
+        return '../images/icon-muted.png'
       default:
-        return 'images/icon-normal.png'
+        return '../images/icon-normal.png'
     }
   }
 
@@ -247,7 +242,10 @@ class Service {
   }
 
   writeStorage () {
-    const data = this.storedFields.reduce((prev, key) => prev[key] = this[key], {})
+    const data = {}
+    this.storedFields.forEach((key) => {
+      data[key] = this[key]
+    })
     this.storage.set(data)
   }
 }
